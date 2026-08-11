@@ -1,0 +1,27 @@
+{
+  "name": "OutcomeFuse outcome signal",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR-OUTCOMEFUSE-URL/ingest/YOUR-MONITOR-ID",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{"name": "Authorization", "value": "Bearer YOUR-MONITOR-TOKEN"}]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\"outcome_ok\": true, \"result\": {\"records\": {{ $json.records || 0 }}}, \"estimated_loss\": 0}"
+      },
+      "id": "outcomefuse-outcome-signal",
+      "name": "Report business outcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {}
+}
