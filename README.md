@@ -12,6 +12,8 @@ n8n can report a successful execution even when the workflow produced an empty, 
 4. Replace the monitor URL and one-time bearer token with the values shown in OutcomeFuse.
 5. Place the node after the real business action, such as the CRM write or message delivery.
 
+The template uses n8n's Continue on Error behavior. A temporary monitoring outage will not interrupt the protected business workflow.
+
 ## Payload
 
 ```json
@@ -29,4 +31,3 @@ Set `outcome_ok` to `false` and include a `reason` when the business action fail
 Automatic workflow deactivation is off by default. It must be armed separately for each monitor, and reactivation is manual. API credentials and alert webhook URLs are encrypted at rest.
 
 Full documentation: [OutcomeFuse n8n setup guide](https://web-production-b0715.up.railway.app/docs)
-
