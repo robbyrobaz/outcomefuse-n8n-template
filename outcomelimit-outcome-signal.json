@@ -1,28 +1,84 @@
 {
-  "name": "OutcomeLimit outcome signal",
+  "name": "Report n8n business outcomes to OutcomeLimit",
   "nodes": [
+    {
+      "parameters": {},
+      "id": "test-outcome-signal",
+      "name": "Test outcome signal",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "endpoint-url", "name": "endpoint_url", "value": "https://web-production-b0715.up.railway.app/ingest/YOUR-MONITOR-ID", "type": "string"},
+            {"id": "outcome-ok", "name": "outcome_ok", "value": true, "type": "boolean"},
+            {"id": "records", "name": "records", "value": 1, "type": "number"},
+            {"id": "estimated-loss", "name": "estimated_loss", "value": 0, "type": "number"},
+            {"id": "reason", "name": "reason", "value": "", "type": "string"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "configure-outcome-signal",
+      "name": "Configure OutcomeLimit signal",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 300]
+    },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://YOUR-OUTCOMELIMIT-URL/ingest/YOUR-MONITOR-ID",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [{"name": "Authorization", "value": "Bearer YOUR-MONITOR-TOKEN"}]
-        },
+        "url": "={{ $json.endpoint_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={\"outcome_ok\": true, \"result\": {\"records\": {{ $json.records || 0 }}}, \"estimated_loss\": 0}"
+        "body": "={{ { outcome_ok: $json.outcome_ok, result: { records: $json.records }, estimated_loss: $json.estimated_loss, reason: $json.reason }.toJsonString() }}",
+        "options": {}
       },
-      "id": "outcomelimit-outcome-signal",
+      "id": "report-business-outcome",
       "name": "Report business outcome",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [760, 300],
+      "position": [720, 300],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Report n8n business outcomes to OutcomeLimit\n\n### Who is this for?\nAutomation teams and n8n agencies that need evidence of the business result, not only a successful execution.\n\n### What it does\nThis workflow sends a signed outcome signal to OutcomeLimit. The signal records whether the intended result happened, a numeric result such as CRM rows written, and any estimated dollar loss. OutcomeLimit totals reported loss over rolling 24-hour and 7-day windows and detects missing signals. Alert-only canaries require no n8n API access. Optional workflow deactivation is configured separately and remains off by default.\n\n### How to set up\n1. Create an alert-only canary in OutcomeLimit.\n2. Copy its endpoint into **Configure OutcomeLimit signal**.\n3. Create an **Header Auth** credential. Use `Authorization` as the header name and `Bearer YOUR-MONITOR-TOKEN` as the value.\n4. Select that credential in **Report business outcome**.\n5. Run the test, then place the final two nodes after the real business action in your workflow.\n\n### Requirements\nAn OutcomeLimit trial or subscription and an n8n instance with the HTTP Request node. No community nodes are required.\n\n### Customize\nMap `outcome_ok`, `records`, `estimated_loss`, and `reason` from the preceding business-action node. Keep **Continue On Error** enabled so reporting cannot interrupt the protected workflow.",
+        "height": 660,
+        "width": 560,
+        "color": 4
+      },
+      "id": "workflow-overview",
+      "name": "Workflow overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [160, -420]
+    },
+    {
+      "parameters": {
+        "content": "## Credential setup\n\nStore the monitor token in n8n's credential vault, never directly in this workflow.\n\nCreate an **Header Auth** credential with:\n- Name: `Authorization`\n- Value: `Bearer YOUR-MONITOR-TOKEN`\n\nSelect it on the HTTP Request node. The token is shown once when the OutcomeLimit canary is created.",
+        "height": 300,
+        "width": 360
+      },
+      "id": "credential-instructions",
+      "name": "Credential instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [680, -40]
     }
   ],
-  "connections": {},
+  "connections": {
+    "Test outcome signal": {"main": [[{"node": "Configure OutcomeLimit signal", "type": "main", "index": 0}]]},
+    "Configure OutcomeLimit signal": {"main": [[{"node": "Report business outcome", "type": "main", "index": 0}]]}
+  },
   "active": false,
-  "settings": {}
+  "settings": {"executionOrder": "v1"},
+  "pinData": {},
+  "meta": {"templateCredsSetupCompleted": false}
 }
